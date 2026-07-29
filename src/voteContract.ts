@@ -114,6 +114,20 @@ await ctx.stub.putState(key, Buffer.from(JSON.stringify(election)));
 
   
 }
+  @Transaction(false)
+    @Returns('string')
+    public async GetAllElections(ctx: Context): Promise<string> {
+      // Empty attribute array = iterate over every key under ELECTION_TYPE
+      const iterator = await ctx.stub.getStateByPartialCompositeKey(ELECTION_TYPE, []);
+      const elections: Election[] = [];
+      let result = await iterator.next();
+      while (!result.done) {
+        elections.push(JSON.parse(result.value.value.toString()));
+        result = await iterator.next();
+      }
+      await iterator.close();
+      return JSON.stringify(elections);
+    }
 
   // Initialize candidates for an election
   @Transaction()

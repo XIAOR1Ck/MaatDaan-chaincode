@@ -61,6 +61,18 @@ let VoteContract = class VoteContract extends fabric_contract_api_1.Contract {
         const key = this.electionKey(ctx, electionId);
         await ctx.stub.putState(key, Buffer.from(JSON.stringify(election)));
     }
+    async GetAllElections(ctx) {
+        // Empty attribute array = iterate over every key under ELECTION_TYPE
+        const iterator = await ctx.stub.getStateByPartialCompositeKey(ELECTION_TYPE, []);
+        const elections = [];
+        let result = await iterator.next();
+        while (!result.done) {
+            elections.push(JSON.parse(result.value.value.toString()));
+            result = await iterator.next();
+        }
+        await iterator.close();
+        return JSON.stringify(elections);
+    }
     // Initialize candidates for an election
     async AddCandidate(ctx, electionId, candidateId, name, affiliation) {
         // Check if the election exists
@@ -174,6 +186,13 @@ __decorate([
     __metadata("design:paramtypes", [fabric_contract_api_1.Context, String, String, String, String, String]),
     __metadata("design:returntype", Promise)
 ], VoteContract.prototype, "CreateElection", null);
+__decorate([
+    (0, fabric_contract_api_1.Transaction)(false),
+    (0, fabric_contract_api_1.Returns)('string'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [fabric_contract_api_1.Context]),
+    __metadata("design:returntype", Promise)
+], VoteContract.prototype, "GetAllElections", null);
 __decorate([
     (0, fabric_contract_api_1.Transaction)(),
     __metadata("design:type", Function),
